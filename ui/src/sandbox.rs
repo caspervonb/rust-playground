@@ -229,8 +229,8 @@ pub mod fut {
 
     use super::{
         basic_secure_docker_command, build_execution_command, set_execution_environment,
-        vec_to_str, wide_open_permissions, BacktraceRequest, Channel, ClippyRequest,
-        ClippyResponse, CompileRequest, CompileResponse, CompileTarget,
+        vec_to_str, wide_open_permissions, BacktraceRequest, BundleRequest, BundleResponse,
+        Channel, ClippyRequest, ClippyResponse, CompileRequest, CompileResponse, CompileTarget,
         CompilerExecutionTimedOutSnafu, CrateInformation, CrateInformationInner, CrateType,
         CrateTypeRequest, DemangleAssembly, DockerCommandExt, EditionRequest, ExecuteRequest,
         ExecuteResponse, FormatRequest, FormatResponse, MacroExpansionRequest,
@@ -359,6 +359,23 @@ pub mod fut {
                 success: output.status.success(),
                 stdout: vec_to_str(output.stdout)?,
                 stderr: vec_to_str(output.stderr)?,
+            })
+        }
+
+        pub async fn bundle(&self, req: &BundleRequest) -> Result<BundleResponse> {
+            self.write_source_code(&req.code).await?;
+            let command = self.bundle_command(req.channel, req.mode, req.tests, req);
+            let output = run_command_with_timeout(command).await?;
+
+            let code = "".to_string();
+            let blob = "".to_string();
+
+            Ok(BundleResponse {
+                success: output.status.success(),
+                stdout: vec_to_str(output.stdout)?,
+                stderr: vec_to_str(output.stderr)?,
+                code,
+                blob,
             })
         }
 
@@ -559,6 +576,25 @@ pub mod fut {
             cmd.arg(&channel.container_name()).args(&execution_cmd);
 
             log::debug!("Execution command is {:?}", cmd);
+
+            cmd
+        }
+
+        fn bundle_command(
+            &self,
+            channel: Channel,
+            mode: Mode,
+            tests: bool,
+            req: impl CrateTypeRequest + EditionRequest + BacktraceRequest,
+        ) -> Command {
+            let mut cmd = self.docker_command(Some(req.crate_type()));
+            set_execution_environment(&mut cmd, None, &req);
+
+            let execution_cmd = build_execution_command(None, channel, mode, &req, tests);
+
+            cmd.arg(&channel.container_name()).args(&execution_cmd);
+
+            log::debug!("Bundling command is {:?}", cmd);
 
             cmd
         }
@@ -990,6 +1026,44 @@ pub struct ExecuteResponse {
     pub success: bool,
     pub stdout: String,
     pub stderr: String,
+}
+
+#[derive(Debug, Clone)]
+pub struct BundleRequest {
+    pub channel: Channel,
+    pub mode: Mode,
+    pub edition: Option<Edition>,
+    pub crate_type: CrateType,
+    pub tests: bool,
+    pub backtrace: bool,
+    pub code: String,
+}
+
+impl CrateTypeRequest for BundleRequest {
+    fn crate_type(&self) -> CrateType {
+        self.crate_type
+    }
+}
+
+impl EditionRequest for BundleRequest {
+    fn edition(&self) -> Option<Edition> {
+        self.edition
+    }
+}
+
+impl BacktraceRequest for BundleRequest {
+    fn backtrace(&self) -> bool {
+        self.backtrace
+    }
+}
+
+#[derive(Debug, Clone)]
+pub struct BundleResponse {
+    pub success: bool,
+    pub stdout: String,
+    pub stderr: String,
+    pub code: String,
+    pub blob: String,
 }
 
 #[derive(Debug, Clone)]

@@ -74,6 +74,7 @@ export enum PrimaryActionCore {
   Asm = 'asm',
   Compile = 'compile',
   Execute = 'execute',
+  Bundle = 'bundle',
   LlvmIr = 'llvm-ir',
   Hir = 'hir',
   Mir = 'mir',
@@ -117,6 +118,7 @@ export enum Focus {
   Execute = 'execute',
   Format = 'format',
   Gist = 'gist',
+  Bundle = 'bundle',
 }
 
 export enum Notification {

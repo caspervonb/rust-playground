@@ -5,13 +5,13 @@ use crate::{
         Endpoint, GenerateLabels, SuccessDetails,
     },
     sandbox::{self, fut::Sandbox, Channel},
-    CachingSnafu, ClippyRequest, ClippyResponse, CompilationSnafu, CompileRequest, CompileResponse,
-    Config, Error, ErrorJson, EvaluateRequest, EvaluateResponse, EvaluationSnafu, ExecuteRequest,
-    ExecuteResponse, ExecutionSnafu, ExpansionSnafu, FormatRequest, FormatResponse,
-    FormattingSnafu, GhToken, GistCreationSnafu, GistLoadingSnafu, InterpretingSnafu, LintingSnafu,
-    MacroExpansionRequest, MacroExpansionResponse, MetaCratesResponse, MetaGistCreateRequest,
-    MetaGistResponse, MetaVersionResponse, MetricsToken, MiriRequest, MiriResponse, Result,
-    SandboxCreationSnafu,
+    BundleRequest, BundleResponse, BundlingSnafu, CachingSnafu, ClippyRequest, ClippyResponse,
+    CompilationSnafu, CompileRequest, CompileResponse, Config, Error, ErrorJson, EvaluateRequest,
+    EvaluateResponse, EvaluationSnafu, ExecuteRequest, ExecuteResponse, ExecutionSnafu,
+    ExpansionSnafu, FormatRequest, FormatResponse, FormattingSnafu, GhToken, GistCreationSnafu,
+    GistLoadingSnafu, InterpretingSnafu, LintingSnafu, MacroExpansionRequest,
+    MacroExpansionResponse, MetaCratesResponse, MetaGistCreateRequest, MetaGistResponse,
+    MetaVersionResponse, MetricsToken, MiriRequest, MiriResponse, Result, SandboxCreationSnafu,
 };
 use async_trait::async_trait;
 use axum::{
@@ -64,6 +64,7 @@ pub(crate) async fn serve(config: Config) {
         .route("/evaluate.json", post(evaluate))
         .route("/compile", post(compile))
         .route("/execute", post(execute))
+        .route("/bundle", post(bundle))
         .route("/format", post(format))
         .route("/clippy", post(clippy))
         .route("/miri", post(miri))
@@ -164,6 +165,16 @@ async fn execute(Json(req): Json<ExecuteRequest>) -> Result<Json<ExecuteResponse
         req,
         |sb, req| async move { sb.execute(req).await }.boxed(),
         ExecutionSnafu,
+    )
+    .await
+    .map(Json)
+}
+
+async fn bundle(Json(req): Json<BundleRequest>) -> Result<Json<BundleResponse>> {
+    with_sandbox(
+        req,
+        |sb, req| async move { sb.bundle(req).await }.boxed(),
+        BundlingSnafu,
     )
     .await
     .map(Json)

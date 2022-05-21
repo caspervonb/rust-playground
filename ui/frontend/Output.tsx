@@ -47,7 +47,7 @@ interface PaneWithCodeProps extends SimplePaneProps {
 
 const Output: React.SFC = () => {
   const somethingToShow = useSelector(selectors.getSomethingToShow);
-  const { meta: { focus }, execute, format, clippy, miri, macroExpansion, assembly, llvmIr, mir, hir, wasm, gist } =
+  const { meta: { focus }, execute, bundle, format, clippy, miri, macroExpansion, assembly, llvmIr, mir, hir, wasm, gist } =
     useSelector((state: State) => state.output);
 
   const dispatch = useDispatch();
@@ -63,6 +63,7 @@ const Output: React.SFC = () => {
   const focusHir = useCallback(() => dispatch(actions.changeFocus(Focus.Hir)), [dispatch]);
   const focusWasm = useCallback(() => dispatch(actions.changeFocus(Focus.Wasm)), [dispatch]);
   const focusGist = useCallback(() => dispatch(actions.changeFocus(Focus.Gist)), [dispatch]);
+  const focusBundle = useCallback(() => dispatch(actions.changeFocus(Focus.Bundle)), [dispatch]);
 
   if (!somethingToShow) {
     return null;
@@ -76,6 +77,7 @@ const Output: React.SFC = () => {
     body = (
       <div className={styles.body}>
         {focus === Focus.Execute && <Execute />}
+        {focus === Focus.Bundle && <PaneWithCode {...bundle} kind="bundle" />}
         {focus === Focus.Format && <SimplePane {...format} kind="format" />}
         {focus === Focus.Clippy && <SimplePane {...clippy} kind="clippy" />}
         {focus === Focus.Miri && <SimplePane {...miri} kind="miri" />}
@@ -97,6 +99,10 @@ const Output: React.SFC = () => {
           label="Execution"
           onClick={focusExecute}
           tabProps={execute} />
+        <Tab kind={Focus.Bundle} focus={focus}
+          label="Result"
+          onClick={focusBundle}
+          tabProps={bundle} />
         <Tab kind={Focus.Format} focus={focus}
           label="Format"
           onClick={focusFormat}

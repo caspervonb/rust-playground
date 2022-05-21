@@ -35,6 +35,7 @@ import {
 const routes = {
   compile: { pathname: '/compile' },
   execute: { pathname: '/execute' },
+  bundle: { pathname: '/bundle' },
   format: { pathname: '/format' },
   clippy: { pathname: '/clippy' },
   miri: { pathname: '/miri' },
@@ -94,6 +95,9 @@ export enum ActionType {
   CompileWasmRequest = 'COMPILE_WASM_REQUEST',
   CompileWasmSucceeded = 'COMPILE_WASM_SUCCEEDED',
   CompileWasmFailed = 'COMPILE_WASM_FAILED',
+  BundleRequest = 'BUNDLE_REQUEST',
+  BundleSucceeded = 'BUNDLE_SUCCEEDED',
+  BundleFailed = 'BUNDLE_FAILED',
   EditCode = 'EDIT_CODE',
   AddMainFunction = 'ADD_MAIN_FUNCTION',
   AddImport = 'ADD_IMPORT',
@@ -414,11 +418,45 @@ const performCompileToNightlyWasmOnly = (): ThunkAction => dispatch => {
   dispatch(performCompileToWasm());
 };
 
+const requestBundle = () =>
+  createAction(ActionType.BundleRequest);
+
+const receiveBundleSuccess = ({ code, blob, stdout, stderr }) =>
+  createAction(ActionType.BundleSucceeded, { code, blob, stdout, stderr });
+
+const receiveBundleFailure = ({ error }) =>
+  createAction(ActionType.BundleFailed, { error });
+
+interface BundleRequestBody {
+  channel: string;
+  mode: string;
+  code: string;
+  edition: string;
+  backtrace: boolean;
+}
+
+function performBundleOnly(): ThunkAction {
+  return function(dispatch, getState) {
+    dispatch(requestBundle());
+
+    const state = getState();
+    const { code, configuration: { channel, mode, edition } } = state;
+    const backtrace = state.configuration.backtrace === Backtrace.Enabled;
+
+    const body: BundleRequestBody = { channel, mode, edition, code, backtrace };
+
+    return jsonPost(routes.bundle, body)
+      .then(json => dispatch(receiveBundleSuccess({ ...json })))
+      .catch(json => dispatch(receiveBundleFailure({ ...json })));
+    };
+}
+
 const PRIMARY_ACTIONS: { [index in PrimaryAction]: () => ThunkAction } = {
   [PrimaryActionCore.Asm]: performCompileToAssemblyOnly,
   [PrimaryActionCore.Compile]: performCompileOnly,
   [PrimaryActionCore.Execute]: performExecuteOnly,
   [PrimaryActionCore.Test]: performTestOnly,
+  [PrimaryActionCore.Bundle]: performBundleOnly,
   [PrimaryActionAuto.Auto]: performAutoOnly,
   [PrimaryActionCore.LlvmIr]: performCompileToLLVMOnly,
   [PrimaryActionCore.Hir]: performCompileToHirOnly,
@@ -443,6 +481,8 @@ export const performCompile =
   performAndSwitchPrimaryAction(performCompileOnly, PrimaryActionCore.Compile);
 export const performTest =
   performAndSwitchPrimaryAction(performTestOnly, PrimaryActionCore.Test);
+export const performBundle =
+  performAndSwitchPrimaryAction(performBundleOnly, PrimaryActionCore.Bundle);
 export const performCompileToAssembly =
   performAndSwitchPrimaryAction(performCompileToAssemblyOnly, PrimaryActionCore.Asm);
 export const performCompileToLLVM =
@@ -824,6 +864,9 @@ export type Action =
   | ReturnType<typeof requestExecute>
   | ReturnType<typeof receiveExecuteSuccess>
   | ReturnType<typeof receiveExecuteFailure>
+  | ReturnType<typeof requestBundle>
+  | ReturnType<typeof receiveBundleSuccess>
+  | ReturnType<typeof receiveBundleFailure>
   | ReturnType<typeof requestCompileAssembly>
   | ReturnType<typeof receiveCompileAssemblySuccess>
   | ReturnType<typeof receiveCompileAssemblyFailure>

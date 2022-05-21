@@ -32,6 +32,7 @@ pub(crate) enum Endpoint {
     MetaVersionClippy,
     MetaVersionMiri,
     Evaluate,
+    Bundle,
 }
 
 #[derive(Debug, Copy, Clone, strum::IntoStaticStr)]
@@ -183,6 +184,33 @@ impl GenerateLabels for sandbox::ExecuteRequest {
     }
 }
 
+impl GenerateLabels for sandbox::BundleRequest {
+    fn generate_labels(&self, outcome: Outcome) -> Labels {
+        let Self {
+            channel,
+            crate_type,
+            mode,
+            edition,
+            tests,
+            backtrace,
+            code: _,
+        } = *self;
+
+        Labels {
+            endpoint: Endpoint::Bundle,
+            outcome,
+
+            target: None,
+            channel: Some(channel),
+            mode: Some(mode),
+            edition: Some(edition),
+            crate_type: Some(crate_type),
+            tests: Some(tests),
+            backtrace: Some(backtrace),
+        }
+    }
+}
+
 impl GenerateLabels for sandbox::FormatRequest {
     fn generate_labels(&self, outcome: Outcome) -> Labels {
         let Self { edition, code: _ } = *self;
@@ -306,6 +334,12 @@ impl SuccessDetails for sandbox::CompileResponse {
 }
 
 impl SuccessDetails for sandbox::ExecuteResponse {
+    fn success_details(&self) -> Outcome {
+        common_success_details(self.success, &self.stderr)
+    }
+}
+
+impl SuccessDetails for sandbox::BundleResponse {
     fn success_details(&self) -> Outcome {
         common_success_details(self.success, &self.stderr)
     }

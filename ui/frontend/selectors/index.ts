@@ -75,6 +75,7 @@ const LABELS: { [index in PrimaryActionCore]: string } = {
   [PrimaryActionCore.Mir]: 'Show MIR',
   [PrimaryActionCore.Test]: 'Test',
   [PrimaryActionCore.Wasm]: 'Show WASM',
+  [PrimaryActionCore.Bundle]: 'Bundle',
 };
 
 export const getExecutionLabel = createSelector(primaryActionSelector, primaryAction => LABELS[primaryAction]);

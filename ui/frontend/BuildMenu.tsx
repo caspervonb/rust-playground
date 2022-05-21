@@ -38,6 +38,7 @@ const BuildMenu: React.SFC<BuildMenuProps> = props => {
   const compileToWasm = useDispatchAndClose(actions.performCompileToNightlyWasm, props.close);
   const execute = useDispatchAndClose(actions.performExecute, props.close);
   const test = useDispatchAndClose(actions.performTest, props.close);
+  const bundle = useDispatchAndClose(actions.performBundle, props.close);
 
   return (
     <MenuGroup title="What do you want to do?">
@@ -52,6 +53,10 @@ const BuildMenu: React.SFC<BuildMenuProps> = props => {
       <ButtonMenuItem name="Test" onClick={test}>
         Build the code and run all the tests.
         Equivalent to <code className={styles.code}>cargo test</code>.
+      </ButtonMenuItem>
+      <ButtonMenuItem name="Bundle" onClick={bundle}>
+        Build the code and bundle the results in the web browser.
+        Equivalent to <code className={styles.code}>cargo bundle</code>.
       </ButtonMenuItem>
       <ButtonMenuItem name="ASM" onClick={compileToAssembly}>
         Build and show the resulting assembly code.

@@ -119,6 +119,8 @@ pub enum Error {
     Compilation { source: sandbox::Error },
     #[snafu(display("Execution operation failed: {}", source))]
     Execution { source: sandbox::Error },
+    #[snafu(display("Bundling operation failed: {}", source))]
+    Bundling { source: sandbox::Error },
     #[snafu(display("Evaluation operation failed: {}", source))]
     Evaluation { source: sandbox::Error },
     #[snafu(display("Linting operation failed: {}", source))]
@@ -214,6 +216,29 @@ struct ExecuteResponse {
     success: bool,
     stdout: String,
     stderr: String,
+}
+
+#[derive(Debug, Clone, Deserialize)]
+struct BundleRequest {
+    channel: String,
+    mode: String,
+    #[serde(default)]
+    edition: String,
+    #[serde(rename = "crateType")]
+    crate_type: String,
+    tests: bool,
+    #[serde(default)]
+    backtrace: bool,
+    code: String,
+}
+
+#[derive(Debug, Clone, Serialize)]
+struct BundleResponse {
+    success: bool,
+    stdout: String,
+    stderr: String,
+    code: String,
+    blob: String,
 }
 
 #[derive(Debug, Clone, Deserialize)]
@@ -399,6 +424,34 @@ impl From<sandbox::ExecuteResponse> for ExecuteResponse {
             success: me.success,
             stdout: me.stdout,
             stderr: me.stderr,
+        }
+    }
+}
+
+impl TryFrom<BundleRequest> for sandbox::BundleRequest {
+    type Error = Error;
+
+    fn try_from(me: BundleRequest) -> Result<Self> {
+        Ok(sandbox::BundleRequest {
+            channel: parse_channel(&me.channel)?,
+            mode: parse_mode(&me.mode)?,
+            edition: parse_edition(&me.edition)?,
+            crate_type: parse_crate_type(&me.crate_type)?,
+            tests: me.tests,
+            backtrace: me.backtrace,
+            code: me.code,
+        })
+    }
+}
+
+impl From<sandbox::BundleResponse> for BundleResponse {
+    fn from(me: sandbox::BundleResponse) -> Self {
+        BundleResponse {
+            success: me.success,
+            stdout: me.stdout,
+            stderr: me.stderr,
+            code: me.code,
+            blob: me.blob,
         }
     }
 }

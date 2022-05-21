@@ -41,6 +41,9 @@ export default function meta(state = DEFAULT, action: Action) {
     case ActionType.ExecuteRequest:
       return { ...state, focus: Focus.Execute };
 
+    case ActionType.BundleRequest:
+      return { ...state, focus: Focus.Bundle };
+
     case ActionType.RequestFormat:
       return { ...state, focus: Focus.Format };
     case ActionType.FormatSucceeded:
