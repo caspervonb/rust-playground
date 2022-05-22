@@ -6,6 +6,7 @@ import { State } from './reducers';
 import { Focus } from './types';
 
 import Execute from './Output/Execute';
+import Evaluate from './Output/Evaluate';
 import Gist from './Output/Gist';
 import Section from './Output/Section';
 import SimplePane, { SimplePaneProps } from './Output/SimplePane';
@@ -47,12 +48,13 @@ interface PaneWithCodeProps extends SimplePaneProps {
 
 const Output: React.SFC = () => {
   const somethingToShow = useSelector(selectors.getSomethingToShow);
-  const { meta: { focus }, execute, format, clippy, miri, macroExpansion, assembly, llvmIr, mir, hir, wasm, gist } =
+  const { meta: { focus }, execute, evaluate, format, clippy, miri, macroExpansion, assembly, llvmIr, mir, hir, wasm, gist } =
     useSelector((state: State) => state.output);
 
   const dispatch = useDispatch();
   const focusClose = useCallback(() => dispatch(actions.changeFocus(null)), [dispatch]);
   const focusExecute = useCallback(() => dispatch(actions.changeFocus(Focus.Execute)), [dispatch]);
+  const focusEvaluate = useCallback(() => dispatch(actions.changeFocus(Focus.Evaluate)), [dispatch]);
   const focusFormat = useCallback(() => dispatch(actions.changeFocus(Focus.Format)), [dispatch]);
   const focusClippy = useCallback(() => dispatch(actions.changeFocus(Focus.Clippy)), [dispatch]);
   const focusMiri = useCallback(() => dispatch(actions.changeFocus(Focus.Miri)), [dispatch]);
@@ -76,6 +78,7 @@ const Output: React.SFC = () => {
     body = (
       <div className={styles.body}>
         {focus === Focus.Execute && <Execute />}
+        {focus === Focus.Evaluate && <Evaluate />}
         {focus === Focus.Format && <SimplePane {...format} kind="format" />}
         {focus === Focus.Clippy && <SimplePane {...clippy} kind="clippy" />}
         {focus === Focus.Miri && <SimplePane {...miri} kind="miri" />}
@@ -97,6 +100,10 @@ const Output: React.SFC = () => {
           label="Execution"
           onClick={focusExecute}
           tabProps={execute} />
+        <Tab kind={Focus.Evaluate} focus={focus}
+          label="Evaluation"
+          onClick={focusEvaluate}
+          tabProps={evaluate} />
         <Tab kind={Focus.Format} focus={focus}
           label="Format"
           onClick={focusFormat}

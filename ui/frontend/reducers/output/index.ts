@@ -3,6 +3,7 @@ import { combineReducers } from 'redux';
 import assembly from './assembly';
 import clippy from './clippy';
 import execute from './execute';
+import evaluate from './evaluate';
 import format from './format';
 import gist from './gist';
 import hir from './hir';
@@ -25,6 +26,7 @@ const output = combineReducers({
   hir,
   wasm,
   execute,
+  evaluate,
   gist,
 });
 

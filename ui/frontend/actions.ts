@@ -79,6 +79,9 @@ export enum ActionType {
   ExecuteRequest = 'EXECUTE_REQUEST',
   ExecuteSucceeded = 'EXECUTE_SUCCEEDED',
   ExecuteFailed = 'EXECUTE_FAILED',
+  EvaluateRequest = 'EVALUATE_REQUEST',
+  EvaluateSucceeded = 'EVALUATE_SUCCEEDED',
+  EvaluateFailed = 'EVALUATE_FAILED',
   CompileAssemblyRequest = 'COMPILE_ASSEMBLY_REQUEST',
   CompileAssemblySucceeded = 'COMPILE_ASSEMBLY_SUCCEEDED',
   CompileAssemblyFailed = 'COMPILE_ASSEMBLY_FAILED',
@@ -324,6 +327,22 @@ function performCompileShow(target, { request, success, failure }): ThunkAction 
   };
 }
 
+const requestEvaluate = () =>
+  createAction(ActionType.EvaluateRequest);
+
+const receiveEvaluateSuccess = ({ code, stdout, stderr }) =>
+  createAction(ActionType.EvaluateSucceeded, { code, stdout, stderr });
+
+const receiveEvaluateFailure = ({ error }) =>
+  createAction(ActionType.EvaluateFailed, { error });
+
+const performEvaluateOnly = () =>
+  performCompileShow('wasm-bindgen', {
+    request: requestEvaluate,
+    success: receiveEvaluateSuccess,
+    failure: receiveEvaluateFailure,
+  });
+
 const requestCompileAssembly = () =>
   createAction(ActionType.CompileAssemblyRequest);
 
@@ -419,6 +438,7 @@ const PRIMARY_ACTIONS: { [index in PrimaryAction]: () => ThunkAction } = {
   [PrimaryActionCore.Compile]: performCompileOnly,
   [PrimaryActionCore.Execute]: performExecuteOnly,
   [PrimaryActionCore.Test]: performTestOnly,
+  [PrimaryActionCore.Evaluate]: performEvaluateOnly,
   [PrimaryActionAuto.Auto]: performAutoOnly,
   [PrimaryActionCore.LlvmIr]: performCompileToLLVMOnly,
   [PrimaryActionCore.Hir]: performCompileToHirOnly,
@@ -443,6 +463,8 @@ export const performCompile =
   performAndSwitchPrimaryAction(performCompileOnly, PrimaryActionCore.Compile);
 export const performTest =
   performAndSwitchPrimaryAction(performTestOnly, PrimaryActionCore.Test);
+export const performEvaluate =
+  performAndSwitchPrimaryAction(performEvaluateOnly, PrimaryActionCore.Evaluate);
 export const performCompileToAssembly =
   performAndSwitchPrimaryAction(performCompileToAssemblyOnly, PrimaryActionCore.Asm);
 export const performCompileToLLVM =
@@ -824,6 +846,9 @@ export type Action =
   | ReturnType<typeof requestExecute>
   | ReturnType<typeof receiveExecuteSuccess>
   | ReturnType<typeof receiveExecuteFailure>
+  | ReturnType<typeof requestEvaluate>
+  | ReturnType<typeof receiveEvaluateSuccess>
+  | ReturnType<typeof receiveEvaluateFailure>
   | ReturnType<typeof requestCompileAssembly>
   | ReturnType<typeof receiveCompileAssemblySuccess>
   | ReturnType<typeof receiveCompileAssemblyFailure>

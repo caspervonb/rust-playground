@@ -41,6 +41,10 @@ export default function meta(state = DEFAULT, action: Action) {
     case ActionType.ExecuteRequest:
       return { ...state, focus: Focus.Execute };
 
+    case ActionType.EvaluateRequest:
+      console.log("FOCUS EVALUATE");
+      return { ...state, focus: Focus.Evaluate };
+
     case ActionType.RequestFormat:
       return { ...state, focus: Focus.Format };
     case ActionType.FormatSucceeded:
