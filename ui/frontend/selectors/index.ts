@@ -142,6 +142,7 @@ const getOutputs = (state: State) => [
   state.output.assembly,
   state.output.clippy,
   state.output.execute,
+  state.output.evaluate,
   state.output.format,
   state.output.gist,
   state.output.llvmIr,

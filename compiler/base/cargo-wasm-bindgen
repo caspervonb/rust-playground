@@ -1,0 +1,27 @@
+#!/usr/bin/env bash
+
+set -eu
+
+# Rewrite our arguments to be `cargo build` instead of `cargo wasm-bindgen`;
+# this assumes that the command will always be `cargo wasm-bindgen ...`. We
+# capture the output directory in order to place the result file.
+shift # Ignore "wasm-bindgen"
+args=()
+while (( "$#" )); do
+    if [[ "$1" == "--" ]] ; then
+        : # Ignore
+    elif [[ "$1" == "-o" ]] ; then
+        shift
+        output="$1"
+    else
+        args+="$1"
+    fi
+
+    shift
+done
+
+# Perform our build
+# https://stackoverflow.com/a/7577209/155423
+cargo "build" "--target=wasm32-unknown-unknown" ${args[@]+"${args[@]}"}
+wasm-bindgen --target web --output $output.js $wasm
+echo "{}" > $output.json

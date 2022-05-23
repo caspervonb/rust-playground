@@ -71,5 +71,6 @@ RUN rm src/*.rs
 ADD --chown=playground postinstall.sh /playground/tools/
 RUN /playground/tools/postinstall.sh ${channel}
 ADD --chown=playground cargo-wasm /playground/.cargo/bin/
+ADD --chown=playground cargo-wasm-bindgen /playground/.cargo/bin/
 
 ENTRYPOINT ["/playground/tools/entrypoint.sh"]

@@ -6,6 +6,10 @@ function install_wasm_target() {
     rustup target add wasm32-unknown-unknown
 }
 
+function install_wasm_bindgen() {
+    cargo install wasm-bindgen-cli
+}
+
 function install_wasm2wat() {
     cd /tmp
     git clone https://github.com/WebAssembly/wabt
@@ -22,6 +26,7 @@ function install_wasm_gc() {
 
 if [[ $1 == "nightly" ]]; then
     (install_wasm_target)
+    (install_wasm_bindgen)
     (install_wasm2wat)
     (install_wasm_gc)
 fi

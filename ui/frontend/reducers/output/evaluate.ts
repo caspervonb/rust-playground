@@ -3,21 +3,21 @@ import { finish, start } from './sharedStateManagement';
 
 const DEFAULT: State = {
   requestsInProgress: 0,
+  code: null,
   stdout: null,
   stderr: null,
   error: null,
-  code: null,
 };
 
 interface State {
   requestsInProgress: number;
+  code?: string;
   stdout?: string;
   stderr?: string;
   error?: string;
-  code?: string;
 }
 
-export default function execute(state = DEFAULT, action: Action) {
+export default function evaluate(state = DEFAULT, action: Action) {
   switch (action.type) {
     case ActionType.EvaluateRequest:
       return start(DEFAULT, state);
@@ -25,10 +25,8 @@ export default function execute(state = DEFAULT, action: Action) {
       const { code = '', stdout = '', stderr = '' } = action;
       return finish(state, { code, stdout, stderr });
     }
-    case ActionType.EvaluateFailed: {
-      const { error } = action;
-      return finish(state, { error });
-    }
+    case ActionType.EvaluateFailed:
+      return finish(state, { error: action.error });
     default:
       return state;
   }

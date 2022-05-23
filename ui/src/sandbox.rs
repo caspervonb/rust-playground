@@ -151,6 +151,7 @@ fn build_execution_command(
     let mut cmd = vec!["cargo"];
 
     match (target, req.crate_type(), tests) {
+        (Some(WasmBindgen), _, _) => cmd.push("wasm-bindgen"),
         (Some(Wasm), _, _) => cmd.push("wasm"),
         (Some(_), _, _) => cmd.push("rustc"),
         (_, _, true) => cmd.push("test"),
@@ -193,6 +194,7 @@ fn build_execution_command(
             Mir => cmd.push("--emit=mir"),
             Hir => cmd.push("-Zunpretty=hir"),
             Wasm => { /* handled by cargo-wasm wrapper */ }
+            WasmBindgen => { /* handled by cargo-wasm-bindgen wrapper */ }
         }
     }
 
@@ -741,6 +743,7 @@ pub enum CompileTarget {
     Mir,
     Hir,
     Wasm,
+    WasmBindgen,
 }
 
 impl CompileTarget {
@@ -751,6 +754,7 @@ impl CompileTarget {
             CompileTarget::Mir => "mir",
             CompileTarget::Hir => "hir",
             CompileTarget::Wasm => "wat",
+            CompileTarget::WasmBindgen => "json",
         };
         OsStr::new(ext)
     }
@@ -766,6 +770,7 @@ impl fmt::Display for CompileTarget {
             Mir => "Rust MIR".fmt(f),
             Hir => "Rust HIR".fmt(f),
             Wasm => "WebAssembly".fmt(f),
+            WasmBindgen => "WebAssembly Bundle".fmt(f),
         }
     }
 }

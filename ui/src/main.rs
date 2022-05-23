@@ -581,6 +581,7 @@ fn parse_target(s: &str) -> Result<sandbox::CompileTarget> {
         "mir" => sandbox::CompileTarget::Mir,
         "hir" => sandbox::CompileTarget::Hir,
         "wasm" => sandbox::CompileTarget::Wasm,
+        "wasm-bindgen" => sandbox::CompileTarget::WasmBindgen,
         value => InvalidTargetSnafu { value }.fail()?,
     })
 }
