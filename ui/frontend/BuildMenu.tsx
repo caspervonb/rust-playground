@@ -29,6 +29,7 @@ const useDispatchAndClose = (action: () => void, close: () => void) => {
 const BuildMenu: React.SFC<BuildMenuProps> = props => {
   const isHirAvailable = useSelector(selectors.isHirAvailable);
   const isWasmAvailable = useSelector(selectors.isWasmAvailable);
+  const isEvaluateAvailable = useSelector(selectors.isEvaluateAvailable);
 
   const compile = useDispatchAndClose(actions.performCompile, props.close);
   const compileToAssembly = useDispatchAndClose(actions.performCompileToAssembly, props.close);
@@ -53,9 +54,11 @@ const BuildMenu: React.SFC<BuildMenuProps> = props => {
       <ButtonMenuItem name="Test" onClick={test}>
         Build the code and run all the tests.
         Equivalent to <code className={styles.code}>cargo test</code>.
+        {!isWasmAvailable && <WasmAside />}
       </ButtonMenuItem>
       <ButtonMenuItem name="Evaluate" onClick={evaluate}>
         Build the code and evalaute the result in the web page.
+        {!isEvaluateAvailable && <EvaluateAside />}
       </ButtonMenuItem>
       <ButtonMenuItem name="ASM" onClick={compileToAssembly}>
         Build and show the resulting assembly code.
@@ -88,6 +91,13 @@ const HirAside: React.SFC = () => (
 const WasmAside: React.SFC = () => (
   <MenuAside>
     Note: WASM currently requires using the Nightly channel, selecting this
+    option will switch to Nightly.
+  </MenuAside>
+);
+
+const EvaluateAside: React.SFC = () => (
+  <MenuAside>
+    Note: Evaluate currently requires using the Nightly channel, selecting this
     option will switch to Nightly.
   </MenuAside>
 );

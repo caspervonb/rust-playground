@@ -343,6 +343,11 @@ const performEvaluateOnly = () =>
     failure: receiveEvaluateFailure,
   });
 
+const performEvaluateNightlyOnly = (): ThunkAction => dispatch => {
+  dispatch(changeChannel(Channel.Nightly));
+  dispatch(performEvaluateOnly());
+};
+
 const requestCompileAssembly = () =>
   createAction(ActionType.CompileAssemblyRequest);
 
@@ -438,7 +443,7 @@ const PRIMARY_ACTIONS: { [index in PrimaryAction]: () => ThunkAction } = {
   [PrimaryActionCore.Compile]: performCompileOnly,
   [PrimaryActionCore.Execute]: performExecuteOnly,
   [PrimaryActionCore.Test]: performTestOnly,
-  [PrimaryActionCore.Evaluate]: performEvaluateOnly,
+  [PrimaryActionCore.Evaluate]: performEvaluateNightlyOnly,
   [PrimaryActionAuto.Auto]: performAutoOnly,
   [PrimaryActionCore.LlvmIr]: performCompileToLLVMOnly,
   [PrimaryActionCore.Hir]: performCompileToHirOnly,

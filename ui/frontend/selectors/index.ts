@@ -107,6 +107,8 @@ const editionSelector = (state: State) => state.configuration.edition;
 export const isNightlyChannel = (state: State) => (
   state.configuration.channel === Channel.Nightly
 );
+
+export const isEvaluateAvailable = isNightlyChannel;
 export const isWasmAvailable = isNightlyChannel;
 export const isHirAvailable = isNightlyChannel;
 
